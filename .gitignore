@@ -5,6 +5,7 @@
 my_settings.py
 *.csv
 db_uploader.py
+test_db.py
 
 ### Django ###
 *.log
