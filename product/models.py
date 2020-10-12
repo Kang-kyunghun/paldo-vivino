@@ -75,7 +75,7 @@ class Product(models.Model):
     distributor     = models.ForeignKey(Distributor, on_delete = models.CASCADE, related_name = 'products')
     alcohol_content = models.DecimalField(max_digits = 7, decimal_places = 2)
     allergen        = models.CharField(max_length = 150)
-    highligth       = models.TextField()
+    highlight       = models.TextField()
     taste_summery   = models.CharField(max_length = 1000)
     bold            = models.DecimalField(max_digits = 7, decimal_places = 2)
     sweet           = models.DecimalField(max_digits = 7, decimal_places = 2)

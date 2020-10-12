@@ -7,7 +7,7 @@ from django.views       import View
 from django.db.models   import Q
 
 from paldo.settings     import SECRET_KEY, ALGORITHM
-from .models            import Account, Wishlist
+from .models            import Account, WishList
 
 class SignUpView(View):
     def post(self, request):
