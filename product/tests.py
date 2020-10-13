@@ -94,7 +94,7 @@ def create_data():
         alcohol_content = 16.7,
         allergen        = 'Contains sulfites',
         highlight       = 'Highlight1.\u2028Highlight2.',
-        taste_summery   = 'The taste profile of HanRaSan  is based on 7760 user reviews',
+        taste_summary   = 'The taste profile of HanRaSan  is based on 7760 user reviews',
         bold            = 0,
         sweet           = 10,
         acidic          = 0,
@@ -112,7 +112,7 @@ def create_data():
         alcohol_content = 12.7,
         allergen        = 'Contains sulfites',
         highlight       = 'Highlight1.\u2028Highlight2.',
-        taste_summery   = 'taste_summery_red',
+        taste_summary   = 'taste_summary_red',
         bold            = 20,
         sweet           = 10,
         acidic          = 20,
@@ -768,3 +768,100 @@ class ProductsTest(TestCase):
             'message': 'INVALID_VALUE'
         })
         self.assertEqual(response.status_code, 400)      
+
+class ProductTest(TestCase):
+    def setUp(self):
+        create_data()
+        
+    def tearDown(self):
+        delete_data()
+
+    def test_procut_get_success(self):
+        client = Client()
+        response = client.get('/products/5')
+       
+        self.assertEqual(response.json(),
+            {
+            "product": {
+                            "id": 5,
+                            "image_url": "France_red_wine.png",
+                            "type" : "Red",
+                            "winery": "Wecode",
+                            "wine_name": "France red wine",
+                            "year": 2009,
+                            "nation": "France",
+                            "region": "Paris",
+                            "rating": 4.2,
+                            "ratings": 256,
+                            "price": "42.10",
+                            "percentage": None,
+                            "feature": "feature5",
+                            "editor_note": "Editor_note1",
+                            "merchant": "Vivino",
+                            "description": [
+                                "description1",
+                                "vin1",
+                                "domaine1",
+                                "vignoble1"
+                            ],
+                            "highlight": [
+                                "Highlight1.",
+                                "Highlight2."
+                            ],
+                            "taste_summary": "taste_summary_red",
+                            "bold": "20.00",
+                            "sweet": "10.00",
+                            "acidic": "20.00",
+                            "score": [
+                                1,
+                                1,
+                                1,
+                                1,
+                                1
+                            ],
+                            "wishlist" : False,
+                            "grape"           : ['Grape'],
+                            "alcohol_content" : '12.70',
+                            "allergen"        : 'Contains sulfites',
+                            "vintages": [
+                                {
+                                    "id": 3,
+                                    "year": 2011,
+                                    "rating": 4.3,
+                                    "ratings": 0,
+                                    "price": "43.10",
+                                    "percentage": None,
+                                    "feature": "feature3"
+                                },
+                                {
+                                    "id": 4,
+                                    "year": 2010,
+                                    "rating": 4.0,
+                                    "ratings": 0,
+                                    "price": "41.10",
+                                    "percentage": None,
+                                    "feature": "feature4"
+                                },
+                                {
+                                    "id": 5,
+                                    "year": 2009,
+                                    "rating": 4.2,
+                                    "ratings": 256,
+                                    "price": "42.10",
+                                    "percentage": None,
+                                    "feature": "feature5"
+                                },
+                            ]
+                        }
+        })
+        self.assertEqual(response.status_code, 200)
+    
+    def test_Product_get_fail(self):
+        client = Client()
+        response = client.get('/products/100')
+        self.assertEqual(response.json(),
+            {
+                'message':'ObjectDoesNotExist'
+            }
+        )
+        self.assertEqual(response.status_code, 400)
