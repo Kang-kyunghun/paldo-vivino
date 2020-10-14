@@ -137,20 +137,6 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
 )
 
-LOGGING = {
-    'disable_existing_loggers': False,
-    'version': 1,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'level': 'DEBUG',
-        },
-    },
-    'loggers': {
-        'django.db.backends': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
-}
+AWS_ACCESS_KEY_ID = my_settings.aws_access_key_id
+
+AWS_SECRET_ACCESS_KEY = my_settings.aws_secret_access_key
