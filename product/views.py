@@ -74,7 +74,7 @@ class ProductsView(View):
             "result" : [{
                             "id"          : wine.id,
                             "image_url"   : wine.product.image,
-                            "type"        : wine.procuct.wine_type.name,
+                            "type"        : wine.product.wine_type.name,
                             "winery"      : wine.product.winery.name,
                             "wine_name"   : wine.product.name,
                             "year"        : wine.year,
