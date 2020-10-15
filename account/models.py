@@ -18,6 +18,6 @@ class Account(models.Model):
 class WishList(models.Model):
     user = models.ForeignKey(Account, on_delete=models.CASCADE)
     vintage = models.ForeignKey('product.Vintage', on_delete=models.CASCADE)
-
+  
     class Meta:
         db_table = 'wishlists'
