@@ -2,7 +2,10 @@ import json
 import bcrypt
 import jwt
 import boto3
+import requests
+import re
 
+from random             import randint
 from django.http        import JsonResponse
 from django.views       import View
 from django.db.models   import Q
@@ -21,7 +24,7 @@ class SignUpView(View):
             if Account.objects.filter(email = data['email']).exists():
                 return JsonResponse({'message':'DUPLICATED_EMAIL'}, status=400)
             
-            if '@' not in data['email'] or '.' not in data['email']:
+            if re.findall('[@.]', data['email']) != ['@', '.']:
                 return JsonResponse({'message':'NOT INCLUDE @ or . '}, status= 400)
             
             if len(data['password']) < PASSWORD_LENGTH:
@@ -110,3 +113,47 @@ class ProfileImageView(View):
         else:
             Account.objects.filter(id = request.user_id).update(image = URL)
         return JsonResponse({'message':'SUCCESS'}, status=200)
+            
+class SignInView(View):
+    def post(self, request):           
+        data = json.loads(request.body)
+        try:
+            if not Account.objects.filter(email=data['email']).exists():
+                return JsonResponse({'message':'INVALID_USER'}, status=403)
+
+            if not bcrypt.checkpw(
+                data['password'].encode('utf-8'), Account.objects.get(email=data['email']).password.encode('utf-8')):                
+                return JsonResponse({'message':'INVALID_USER'}, status=401)
+
+            accessed_user = Account.objects.get(email=data['email'])
+            access_token  = jwt.encode({'user_id': accessed_user.id}, SECRET_KEY, ALGORITHM)
+            return JsonResponse({'Authorization': access_token.decode('utf-8')}, status=200)
+            
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
+
+    def get(self, request):           
+       
+        token          = request.headers.get('AccessToken')
+        URL            = 'https://kapi.kakao.com/v2/user/me'
+        headers        = {'Authorization': f'Bearer {token}'}
+        response_kakao = requests.post(URL, headers = headers)
+        data           = response_kakao.json()
+        data_kakao     = data['kakao_account']
+
+        try:
+            if not Account.objects.filter(email=data_kakao['email']).exists():
+                encoded_password = str(randint(1000000000000,9999999999999)).encode('utf-8')
+                hashed_pw        = bcrypt.hashpw(encoded_password, bcrypt.gensalt())
+                Account.objects.create(
+                    email      = data_kakao['email'],
+                    first_name = '-',
+                    last_name  = data_kakao['profile']['nickname'],
+                    password   = hashed_pw.decode('utf-8') 
+                )
+            accessed_user = Account.objects.get(email=data_kakao['email'])
+            access_token  = jwt.encode({'user_id': accessed_user.id}, SECRET_KEY, ALGORITHM)
+            return JsonResponse({'Authorization': access_token.decode('utf-8')}, status=200)
+        
+        except KeyError:
+            return JsonResponse({'message':'KEY_ERROR'}, status=400)
