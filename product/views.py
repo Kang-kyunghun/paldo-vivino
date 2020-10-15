@@ -48,10 +48,10 @@ class ProductsView(View):
                 not condition['object'].objects.filter(name__in = condition['filter_name']).exists()):
                 return JsonResponse({'message': 'INVALID_VALUE'}, status=400)
         
-        if  int(rating_filter) < MINIMUM_RATING or int(rating_filter) > MAXIMUM_RATING:
+        if  float(rating_filter) < MINIMUM_RATING or float(rating_filter) > MAXIMUM_RATING:
             return JsonResponse({'message': 'INVALID_VALUE'}, status=400)  
         
-        if  int(price_low) < MINIMUM_PRICE:
+        if  float(price_low) < MINIMUM_PRICE:
             return JsonResponse({'message': 'INVALID_VALUE'}, status=400)
         
         filter_factor ={

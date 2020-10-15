@@ -194,6 +194,7 @@ def delete_data():
     Vintage.objects.all().delete()
     ProductGrape.objects.all().delete()
     Rating.objects.all().delete()
+    Account.objects.all().delete()
 
 class ProductsTest(TestCase):
 

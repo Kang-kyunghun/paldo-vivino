@@ -6,7 +6,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from paldo.settings         import SECRET_KEY, ALGORITHM
 from account.models         import WishList
 
-
 def login_decorator(func):
     def wrapper(self, request, *args, **kwargs):
         if not request.headers.get('Authorization'): 
@@ -41,4 +40,3 @@ def check_wishlist(request, id):
         return False
     except ObjectDoesNotExist:
         return False
-
