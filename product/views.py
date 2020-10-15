@@ -67,12 +67,14 @@ class ProductsView(View):
     
         wines = Vintage.objects.select_related('product__winery', 
                                             'product__country', 
-                                            'product__region').filter(**applied_filter).order_by(order)
+                                            'product__region',
+                                            'product__wine_type').filter(**applied_filter).order_by(order)
         products = {
             "count"  : wines.count(),
             "result" : [{
                             "id"          : wine.id,
                             "image_url"   : wine.product.image,
+                            "type"        : wine.procuct.wine_type.name,
                             "winery"      : wine.product.winery.name,
                             "wine_name"   : wine.product.name,
                             "year"        : wine.year,

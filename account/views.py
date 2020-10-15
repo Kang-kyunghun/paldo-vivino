@@ -53,7 +53,7 @@ class WishListView(View):
             )
             return JsonResponse({'message':'WISHLIST_ADD'}, status=200)
         
-        WishList.objects.filter(user_id = request.user_id, vintage_id = id).delete()
+        WishList.objects.get(user_id = request.user_id, vintage_id = id).delete()
         return JsonResponse({'message':'WISHLIST_DELETE'}, status=200)
 
     @login_decorator
