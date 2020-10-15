@@ -39,7 +39,7 @@ class CartsView(View):
             
             if Cart.objects.filter(user_id = request.user_id).filter(vintage_id = data['vintage_id']).exists():
                 cart = Cart.objects.filter(user_id = request.user_id).get(vintage_id = data['vintage_id'])
-                cart.quantity += data['quantity']
+                cart.quantity += int(data['quantity'])
                 cart.save()
                 return JsonResponse({'message':'CHANGE_SUCCESS'}, status=200)
             else:
