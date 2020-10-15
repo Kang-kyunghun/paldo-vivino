@@ -139,11 +139,12 @@ class SignUpTest(TestCase):
 
     def test_signupview_post_success(self):
         client = Client()
-        user = {
+        user   = {
             'email'      : 'kgh239@naver.com',
             'first_name' : 'Kyunghun',
             'last_name'  : 'Kang',
             'password'   :  '123456789' }
+        
         response = client.post('/accounts/signup', json.dumps(user), content_type='application/json')
 
         self.assertEqual(response.json(),
@@ -155,11 +156,12 @@ class SignUpTest(TestCase):
     
     def test_signupview_post_fail_duplication(self):
         client = Client()
-        user = {
+        user   = {
             'email'      : 'wecode@naver.com',
             'first_name' : 'Kyunghun',
             'last_name'  : 'Kang',
             'password'   :  '123456789' }
+        
         response = client.post('/accounts/signup', json.dumps(user), content_type='application/json')
 
         self.assertEqual(response.json(),
@@ -171,11 +173,12 @@ class SignUpTest(TestCase):
     
     def test_signupview_post_fail_emailformat1(self):
         client = Client()
-        user = {
+        user   = {
             'email'      : 'wecodenaver.com',
             'first_name' : 'Kyunghun',
             'last_name'  : 'Kang',
             'password'   :  '123456789' }
+        
         response = client.post('/accounts/signup', json.dumps(user), content_type='application/json')
 
         self.assertEqual(response.json(),
@@ -187,11 +190,12 @@ class SignUpTest(TestCase):
     
     def test_signupview_post_fail_emailformat2(self):
         client = Client()
-        user = {
+        user   = {
             'email'      : 'wecode@navercom',
             'first_name' : 'Kyunghun',
             'last_name'  : 'Kang',
             'password'   :  '123456789' }
+        
         response = client.post('/accounts/signup', json.dumps(user), content_type='application/json')
 
         self.assertEqual(response.json(),
@@ -203,11 +207,12 @@ class SignUpTest(TestCase):
     
     def test_signupview_post_fail_passwordlenght(self):
         client = Client()
-        user = {
+        user   = {
             'email'      : 'kgh239@naver.com',
             'first_name' : 'Kyunghun',
             'last_name'  : 'Kang',
             'password'   :  '12345' }
+        
         response = client.post('/accounts/signup', json.dumps(user), content_type='application/json')
 
         self.assertEqual(response.json(),
@@ -219,11 +224,12 @@ class SignUpTest(TestCase):
     
     def test_signupview_post_fail_keyerror(self):
         client = Client()
-        user = {
+        user   = {
             'emaisl'     : 'kgh239@naver.com',
             'first_name' : 'Kyunghun',
             'last_name'  : 'Kang',
             'password'   :  '12345' }
+        
         response = client.post('/accounts/signup', json.dumps(user), content_type='application/json')
 
         self.assertEqual(response.json(),
@@ -304,3 +310,148 @@ class WishListTest(TestCase):
                                     }]
             }       
         })
+class SignInTest(TestCase):
+    def setUp(self):
+        encoded_password = '12345678'.encode('utf-8')
+        hashed_pw        = bcrypt.hashpw(encoded_password, bcrypt.gensalt())
+        Account.objects.create(
+            id           = 1,
+            email        = 'kgh239@wecode.com',
+            first_name   = 'wecode',
+            last_name    = 'wecode',
+            password     = hashed_pw.decode('utf-8')
+           )
+
+    def tearDown(self):
+        Account.objects.all().delete()
+
+    def test_signin_success(self):
+        client = Client()
+        test   = {
+            'email'    : 'kgh239@wecode.com',
+            'password' : '12345678'
+        }
+
+        response = client.post("/accounts/signin", json.dumps(test), content_type = "application/json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(response.json().keys()),['Authorization'])
+    
+    def test_signin_invaliduser_email_fail(self):
+        client = Client()
+        test   = {
+            'email'    : 'wecode@wecode.com',
+            'password' : '12345678'
+        }
+
+        response = client.post("/accounts/signin", json.dumps(test), content_type = "application/json")
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json(),
+                {
+                    'message':'INVALID_USER'
+                }
+        )
+        
+    def test_signin_invaliduser_password_fail(self):
+        client = Client()
+        test   = {
+            'email'    : 'wecode@wecode.com',
+            'password' : '123456789'
+        }
+
+        response = client.post("/accounts/signin", json.dumps(test), content_type = "application/json")
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json(),
+                {
+                    'message':'INVALID_USER'
+                }
+        )
+    
+    def test_signin_keyerror_fail(self):
+        client = Client()
+        test   = {
+            'emaill'   : 'wecode@wecode.com',
+            'password' : '123456789'
+        }
+
+        response = client.post("/accounts/signin", json.dumps(test), content_type = "application/json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json(),
+                {
+                    'message':'KEY_ERROR'
+                }
+        )
+   
+    @patch("account.views.requests")
+    def test_signin_kakao_new_account(self, mocked_requests):
+        client = Client()
+
+        class MockedResponse:
+            def json(self):
+                return {
+                        "kakao_account" : { 
+                            "email": "kgh239@naver.com",
+                            "profile": {
+                                    "nickname": "홍길동"
+                                }
+                        }
+                    }
+
+        mocked_requests.post = MagicMock(return_value = MockedResponse())
+        response             = client.get("/accounts/signin", **{"Authorization":"1234","content_type" : "application/json"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(response.json().keys()),['Authorization'])
+    
+    @patch("account.views.requests")
+    def test_signin_kakao_exist_account(self, mocked_requests):
+        client = Client()
+
+        class MockedResponse:
+            def json(self):
+                return {
+                        "kakao_account": { 
+                            "email": "kgh239@wecode.com",
+                            "profile": {
+                                    "nickname": "홍길동"
+                                }
+                        }
+                }
+
+        mocked_requests.post = MagicMock(return_value = MockedResponse())
+        response             = client.get("/accounts/signin", **{"Authorization":"1234","content_type" : "application/json"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(response.json().keys()),['Authorization'])
+    
+    @patch("account.views.requests")
+    def test_signin_kakao_keyerror_fail(self, mocked_requests):
+        client = Client()
+
+        class MockedResponse:
+            def json(self):
+                return {
+                        "kakao_account": { 
+                            "emaill": "kgh239@naver.com",
+                            "profile": {
+                                    "nickname": "홍길동"
+                                }
+                        }
+                }
+
+        mocked_requests.post = MagicMock(return_value = MockedResponse())
+        response             = client.get("/accounts/signin", **{"Authorization":"1234","content_type" : "application/json"})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json(),
+                {
+                    'message':'KEY_ERROR'
+                }
+        )
